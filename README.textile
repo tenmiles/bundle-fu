@@ -13,7 +13,7 @@ h3. Step 1
 
 Install this plugin
 
-script/plugin install git://github.com/timcharper/bundle-fu.git
+script/plugin install git://github.com/zinf/bundle-fu.git
 
 h3. Step 2
 
