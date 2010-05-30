@@ -1,5 +1,7 @@
 class BundleFu::CSSUrlRewriter
   class << self
+    include ActionView::Helpers::AssetTagHelper
+
     # rewrites a relative path to an absolute path, removing excess "../" and "./"
     # rewrite_relative_path("stylesheets/default/global.css", "../image.gif") => "/stylesheets/image.gif"
     def rewrite_relative_path(source_filename, relative_url)
@@ -34,7 +36,20 @@ class BundleFu::CSSUrlRewriter
     # url(/stylesheets/../images/active_scaffold/default/add.gif);
     # url('/images/active_scaffold/default/add.gif');
     def rewrite_urls(filename, content)
-      content.gsub!(/url *\(([^\)]+)\)/) { "url(#{rewrite_relative_path(filename, $1)})" }
+      content.gsub!(/url *\(([^\)]+)\)/) {
+        inner = $1
+        if inner =~ /^data:/
+          inner
+        else
+          path = rewrite_relative_path(filename, inner)
+          case path
+          when /^\/images\/(.*)/
+            "url(#{image_path($1)})"
+          else
+            path
+          end
+        end
+      }
       content
     end
     
