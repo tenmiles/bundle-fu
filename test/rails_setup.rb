@@ -18,6 +18,8 @@ else
 end
 
 require 'active_support'
+require 'action_controller'
+require 'action_view/helpers'
 
 # Make double-sure the RAILS_ENV is set to test :
 silence_warnings { RAILS_ENV = "test" }

@@ -1,9 +1,5 @@
 require File.join(File.dirname(__FILE__), '../test_helper.rb')
 
-require "test/unit"
-
-# require "library_file_name"
-
 class BundleFuTest < Test::Unit::TestCase
   def setup
     @mock_view = MockView.new

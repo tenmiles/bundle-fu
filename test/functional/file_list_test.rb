@@ -1,9 +1,5 @@
 require File.join(File.dirname(__FILE__), '../test_helper.rb')
 
-require "test/unit"
-
-# require "library_file_name"
-
 class FileListTest < Test::Unit::TestCase
   def setup
     
