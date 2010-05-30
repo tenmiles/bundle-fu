@@ -1,5 +1,5 @@
 /* 
-    Testing url(data:image) links in css files
+    Testing data: links in css urls
 */
 
 body {background: URL(data:image/jpg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/

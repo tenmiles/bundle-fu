@@ -80,6 +80,15 @@ class CSSBundleTest < Test::Unit::TestCase
     assert_match /#{pattern}/mx, bundled_css # # multiline, ignore whitespace
   end
 
+  def test__bundle_css_file__adds_rails_asset_ids_for_existing_image_urls
+    bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_5.css"])
+    pattern = Regexp.escape("background-image: url(/images/test1.gif?") + "\\d+" + Regexp.escape(')')
+    assert_match(Regexp.new(pattern), bundled_css)
+    pattern = Regexp.escape("background-image: url(/images/test2.png?") + "\\d+" + Regexp.escape(')')
+    assert_match(Regexp.new(pattern), bundled_css)
+    assert_match("background-image: url(/images/non_existing.jpg)", bundled_css)
+  end
+
   private
   
     def assert_rewrites(source_filename, rewrite_map)

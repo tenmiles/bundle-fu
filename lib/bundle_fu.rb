@@ -9,8 +9,7 @@ class BundleFu
     def bundle_files(filenames=[])
       output = ""
       filenames.each{ |filename|
-        output << "/* --------- #{filename} --------- */ "
-        output << "\n"
+        output << "\n/* --------- #{filename} --------- */\n"
         begin
           content = (File.read(File.join(RAILS_ROOT, "public", filename)))
         rescue 
@@ -47,9 +46,9 @@ class BundleFu
     end
 
     def bundle_css_files(filenames=[], options = {})
-      bundle_files(filenames) { |filename, content|
+      bundle_files(filenames) do |filename, content|
           BundleFu::CSSUrlRewriter.rewrite_urls(filename, content)
-      }
+      end
     end
   end
   

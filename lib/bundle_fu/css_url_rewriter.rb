@@ -46,8 +46,8 @@ class BundleFu::CSSUrlRewriter
     def rewrite_urls(filename, content)
       content.gsub!(/url *\(([^\)]+)\)/i) do
         inner = $1; match = $&
-        if inner.start_with?('data:') ||
-            ( (inner.at(0) == '"' || inner.at(0) == "'") && inner[1..-1].start_with?('data:') )
+        data_ = (inner.at(0) == '"' || inner.at(0) == "'") ? inner[1,5] : inner[0,5]
+        if data_ == 'data:'
           match
         else
           path = rewrite_relative_path(filename, inner)

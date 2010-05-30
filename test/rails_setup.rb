@@ -18,11 +18,9 @@ else
 end
 
 require 'active_support'
-require 'action_controller'
-require 'action_view/helpers'
-
 # Make double-sure the RAILS_ENV is set to test :
 silence_warnings { RAILS_ENV = "test" }
+silence_warnings { RAILS_ROOT = File.join(File.dirname(__FILE__), 'fixtures') } # due to AssetTagHelper::ASSETS_DIR !
 
 module Rails # a minimal Rails - to suffice the plugin
   class << self
@@ -36,6 +34,10 @@ module Rails # a minimal Rails - to suffice the plugin
         # action_controller/params_parser#parse_formatted_parameters
         Logger.new($stdout) # nil
       end
+    end
+
+    def public_path
+      self.root ? File.join(self.root, "public") : "public"
     end
 
     def root
@@ -52,6 +54,9 @@ module Rails # a minimal Rails - to suffice the plugin
 
   end
 end
+
+require 'action_controller'
+require 'action_view/helpers'
 
 require 'rails/version'
 puts "emulating Rails.version = #{Rails.version}"
