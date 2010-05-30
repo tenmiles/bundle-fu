@@ -1,10 +1,15 @@
+require 'rubygems'
 require 'test/unit'
-require "rubygems"
-require 'active_support'
 
-for file in ["../environment.rb", "mock_view.rb"]
-  require File.expand_path(File.join(File.dirname(__FILE__), file))
+# load all files (plugin init.rb) :
+["bundle_fu", "bundle_fu/js_minimizer", "bundle_fu/css_url_rewriter", "bundle_fu/file_list"].each do |file|
+  require file
 end
+
+# minimal Rails env :
+require File.expand_path(File.join(File.dirname(__FILE__), 'rails_setup'))
+# mock-out action_view :
+require File.expand_path(File.join(File.dirname(__FILE__), 'mock_view'))
 
 def dbg
   require 'ruby-debug'
