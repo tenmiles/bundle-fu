@@ -5,28 +5,36 @@ class BundleFu::CSSUrlRewriter
     # rewrites a relative path to an absolute path, removing excess "../" and "./"
     # rewrite_relative_path("stylesheets/default/global.css", "../image.gif") => "/stylesheets/image.gif"
     def rewrite_relative_path(source_filename, relative_url)
-      relative_url = relative_url.to_s.strip.gsub(/["']/, "")
-      
-      return relative_url if relative_url.first == "/" || relative_url.include?("://")
-      
-      elements = File.join("/", File.dirname(source_filename)).gsub(/\/+/, '/').split("/")
-      elements += relative_url.gsub(/\/+/, '/').split("/")
-      
-      index = 0
-      while(elements[index])
-        if (elements[index]==".") 
-          elements.delete_at(index) 
-        elsif (elements[index]=="..")
-          next if index==0
-          index-=1
-          2.times { elements.delete_at(index)}
-          
-        else
-          index+=1
+      relative_url = relative_url.to_s.strip
+      relative_url.gsub!(/["']/, "")
+
+      del = '/'
+      return relative_url if relative_url.include?("://")
+
+      url_path = relative_url
+      if relative_url.first != del
+
+        elements = File.join(del, File.dirname(source_filename))
+        elements.gsub!(/\/+/, del)
+        elements = elements.split(del) + relative_url.gsub(/\/+/, del).split(del)
+
+        index = 0
+        while elements[index]
+          if elements[index] == "."
+            elements.delete_at(index)
+          elsif elements[index] == ".."
+            next if index==0
+            index -= 1
+            2.times { elements.delete_at(index) }
+          else
+            index += 1
+          end
         end
+
+        url_path = elements * del
       end
-      
-      elements * "/"
+
+      url_path
     end  
   
     # rewrite the URL reference paths
@@ -36,10 +44,11 @@ class BundleFu::CSSUrlRewriter
     # url(/stylesheets/../images/active_scaffold/default/add.gif);
     # url('/images/active_scaffold/default/add.gif');
     def rewrite_urls(filename, content)
-      content.gsub!(/url *\(([^\)]+)\)/) {
-        inner = $1
-        if inner =~ /^data:/
-          inner
+      content.gsub!(/url *\(([^\)]+)\)/i) do
+        inner = $1; match = $&
+        if inner.start_with?('data:') ||
+            ( (inner.at(0) == '"' || inner.at(0) == "'") && inner[1..-1].start_with?('data:') )
+          match
         else
           path = rewrite_relative_path(filename, inner)
           case path
@@ -49,7 +58,7 @@ class BundleFu::CSSUrlRewriter
             path
           end
         end
-      }
+      end
       content
     end
     
