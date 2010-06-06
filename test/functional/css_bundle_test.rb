@@ -18,6 +18,9 @@ class CSSBundleTest < Test::Unit::TestCase
       
     assert_rewrites("/stylesheets/default/main.css", 
       "/images/image.gif" => "/images/image.gif")
+
+    assert_rewrites("/stylesheets/some/theme.css",
+      "images/image.gif" => "/stylesheets/some/images/image.gif")
   end
   
   def test__rewrite_relative_path__should_strip_spaces_and_quotes
@@ -84,8 +87,16 @@ class CSSBundleTest < Test::Unit::TestCase
     bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_5.css"])
     pattern = Regexp.escape("background-image: url(/images/test1.gif?") + "\\d+" + Regexp.escape(')')
     assert_match(Regexp.new(pattern), bundled_css)
+
     pattern = Regexp.escape("background-image: url(/images/test2.png?") + "\\d+" + Regexp.escape(')')
     assert_match(Regexp.new(pattern), bundled_css)
+
+    #pattern = Regexp.escape("background: url(/stylesheets/images/test3.jpg) no-repeat scroll;")
+    #assert_match(Regexp.new(pattern), bundled_css)
+
+    pattern = Regexp.escape("background: url(/stylesheets/images/test3.jpg?") + "\\d+" + Regexp.escape(') no-repeat scroll;')
+    assert_match(Regexp.new(pattern), bundled_css)
+
     assert_match("background-image: url(/images/non_existing.jpg)", bundled_css)
   end
 

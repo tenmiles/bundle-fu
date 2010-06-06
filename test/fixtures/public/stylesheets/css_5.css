@@ -8,6 +8,9 @@
 #test2 {
     background-image: url(../images/test2.png)
 }
+div.test3 {
+    background: url('images/test3.jpg') no-repeat scroll;
+}
 input[name=hello] {
     background-image: url("/images/non_existing.jpg")
 }

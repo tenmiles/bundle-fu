@@ -8,36 +8,32 @@ class BundleFu
     
     def bundle_files(filenames=[])
       output = ""
-      filenames.each{ |filename|
-        output << "\n/* --------- #{filename} --------- */\n"
+      filenames.each do |filename|
+        output << "/* --------- #{filename} --------- */\n"
         begin
-          content = (File.read(File.join(RAILS_ROOT, "public", filename)))
+          content = File.read(File.join(RAILS_ROOT, "public", filename))
         rescue 
           output << "/* FILE READ ERROR! */"
           next
         end
         
-        output << (yield(filename, content)||"")
-      }
+        output << (yield(filename, content) || "")
+      end
       output
     end
     
     def bundle_js_files(filenames=[], options={})
+      packr = Object.const_defined?("Packr")
       output = 
-      bundle_files(filenames) { |filename, content|
-        if options[:compress]
-          if Object.const_defined?("Packr")
-            content
+        bundle_files(filenames) do |filename, content|
+          if options[:compress]
+            packr ? content : JSMinimizer.minimize_content(content)
           else
-            JSMinimizer.minimize_content(content)
+            content
           end
-        else
-          content
         end
-      }
       
-      if Object.const_defined?("Packr")
-        # use Packr plugin (http://blog.jcoglan.com/packr/)
+      if packr # use Packr plugin (http://blog.jcoglan.com/packr/)
         Packr.new.pack(output, options[:packr_options] || {:shrink_vars => false, :base62 => false})
       else
         output
@@ -47,7 +43,7 @@ class BundleFu
 
     def bundle_css_files(filenames=[], options = {})
       bundle_files(filenames) do |filename, content|
-          BundleFu::CSSUrlRewriter.rewrite_urls(filename, content)
+        BundleFu::CSSUrlRewriter.rewrite_urls(filename, content)
       end
     end
   end
@@ -71,32 +67,47 @@ class BundleFu
       }.merge(options)
       
       # allow them to bypass via parameter
-      options[:bundle_fu] = false if options[:bypass]
+      if bypass = options[:bypass]
+        options[:bundle_fu] =
+          if bypass.is_a?(Proc)
+            ! bypass.call
+          elsif bypass.is_a?(Symbol)
+            ! send(bypass)
+          else
+            ! bypass
+          end
+      end
       
       paths = { :css => options[:css_path], :js => options[:js_path] }
       
       content = capture(&block)
-      content_changed = false
+      #content_changed = false
       
       new_files = nil
-      abs_filelist_paths = [:css, :js].inject({}) { | hash, filetype | hash[filetype] = File.join(RAILS_ROOT, "public", paths[filetype], "#{options[:name]}.#{filetype}.filelist"); hash }
+      abs_filelist_paths = [:css, :js].inject({}) do | hash, filetype |
+        filename = "#{options[:name]}.#{filetype}.filelist"
+        hash[filetype] = File.join(RAILS_ROOT, "public", paths[filetype], filename)
+        hash
+      end
       
       # only rescan file list if content_changed, or if a filelist cache file is missing
       unless content == BundleFu.content_store[options[:name]] && File.exists?(abs_filelist_paths[:css]) && File.exists?(abs_filelist_paths[:js])
         BundleFu.content_store[options[:name]] = content 
         new_files = {:js => [], :css => []}
         
-        content.scan(/(href|src) *= *["']([^"^'^\?]+)/i).each{ |property, value|
+        content.scan(/(href|src) *= *["']([^"^'^\?]+)/i).each do |property, value|
           case property
           when "src"
             new_files[:js] << value
           when "href"
             new_files[:css] << value
           end
-        }
+        end
       end
-         
-      [:css, :js].each { |filetype|
+
+      rails_version_less_2_2_0 = ( Rails.version < "2.2.0" )
+
+      [:css, :js].each do |filetype|
         output_filename = File.join(paths[filetype], "#{options[:name]}.#{filetype}")
         abs_path = File.join(RAILS_ROOT, "public", output_filename)
         abs_filelist_path = abs_filelist_paths[filetype]
@@ -122,23 +133,14 @@ class BundleFu
         
         if File.exists?(abs_path) && options[:bundle_fu]
           tag = filetype==:css ? stylesheet_link_tag(output_filename) : javascript_include_tag(output_filename)
-          if Rails::version < "2.2.0"
-            concat( tag , block.binding)
-          else
-            #concat doesn't need block.binding in Rails >= 2.2.0
-            concat( tag )
-          end
-            
+          #concat doesn't need block.binding in Rails >= 2.2.0
+          rails_version_less_2_2_0 ? concat( tag , block.binding) : concat( tag )
         end
-      }
+      end
       
       unless options[:bundle_fu]
-        if Rails::version < "2.2.0"
-          concat( content, block.binding )
-        else
-          #concat doesn't need block.binding in Rails >= 2.2.0
-          concat( content )
-        end
+        #concat doesn't need block.binding in Rails >= 2.2.0
+        rails_version_less_2_2_0 ? concat( content, block.binding ) : concat( content )
       end
     end
   end

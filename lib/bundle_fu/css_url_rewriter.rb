@@ -51,11 +51,15 @@ class BundleFu::CSSUrlRewriter
           match
         else
           path = rewrite_relative_path(filename, inner)
-          case path
-          when /^\/images\/(.*)/
-            "url(#{image_path($1)})"
+          if path.start_with?('/images')
+            "url(#{image_path(path)})"
+          elsif ! path.include?("://")
+            image_dir = File.dirname(path)
+            image_dir = image_dir[1..-1] if image_dir.at(0) == '/'
+            image_path = send(:compute_public_path, File.basename(path), image_dir)
+            "url(#{image_path})"
           else
-            path
+            "url(#{path})"
           end
         end
       end
