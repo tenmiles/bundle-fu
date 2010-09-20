@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '../test_helper.rb')
+require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class BundleFuTest < Test::Unit::TestCase
   def setup
@@ -196,17 +196,19 @@ private
   end
   
   def assert_public_files_match(filenames, needle, message=nil)
-    filenames.each{|filename|
+    filenames = [ filenames ] if filenames.is_a?(String)
+    filenames.each do |filename|
       assert_public_file_exists(filename)
       assert_match(needle.to_regexp, File.read(public_file(filename)), message || "expected #{filename} to match #{needle}, but doesn't.")
-    }
+    end
   end
   
   def assert_public_files_no_match(filenames, needle, message=nil)
-    filenames.each{ |filename|
+    filenames = [ filenames ] if filenames.is_a?(String)
+    filenames.each do |filename|
       assert_public_file_exists(filename)
       assert_no_match(needle.to_regexp, File.read(public_file(filename)), message || "expected #{filename} to not match #{needle}, but does.")
-    }
+    end
   end
   
   def cache_files(name)

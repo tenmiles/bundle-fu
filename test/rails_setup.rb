@@ -84,6 +84,7 @@ module Rails
 end
 
 require 'action_controller'
+require 'action_view'
 require 'action_view/helpers'
 
 if Rails.version >= '3.0.0'

@@ -12,7 +12,7 @@ class BundleFu::CSSUrlRewriter
       return relative_url if relative_url.include?("://")
 
       url_path = relative_url
-      if relative_url.first != del
+      if relative_url[0,1] != del
 
         elements = File.join(del, File.dirname(source_filename))
         elements.gsub!(/\/+/, del)

@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '../test_helper.rb')
+require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class JSBundleTest < Test::Unit::TestCase
   def test__bundle_js_files__bypass_bundle__should_bypass

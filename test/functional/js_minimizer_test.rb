@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '../test_helper.rb')
+require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class BundleFu::JSMinimizerTest < Test::Unit::TestCase
   def test_minimize_content__should_be_less
