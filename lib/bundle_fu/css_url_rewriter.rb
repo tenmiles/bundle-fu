@@ -46,7 +46,7 @@ class BundleFu::CSSUrlRewriter
     def rewrite_urls(filename, content)
       content.gsub!(/url *\(([^\)]+)\)/i) do
         inner = $1; match = $&
-        data_ = (inner.at(0) == '"' || inner.at(0) == "'") ? inner[1,5] : inner[0,5]
+        data_ = (inner[0,1] == '"' || inner[0,1] == "'") ? inner[1,5] : inner[0,5]
         if data_ == 'data:'
           match
         else
@@ -55,7 +55,7 @@ class BundleFu::CSSUrlRewriter
             "url(#{image_path(path)})"
           elsif ! path.include?("://")
             image_dir = File.dirname(path)
-            image_dir = image_dir[1..-1] if image_dir.at(0) == '/'
+            image_dir = image_dir[1..-1] if image_dir[0,1] == '/'
             image_path = send(:compute_public_path, File.basename(path), image_dir)
             "url(#{image_path})"
           else

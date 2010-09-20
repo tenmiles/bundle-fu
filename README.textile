@@ -1,10 +1,10 @@
 h1. Bundle fu
 -------------
 
-Each css / js you load causes your site to load slower!  You can speed things up 
-exponentially by simply combining all your css/js files into one file each.  
+Each css / js you load causes your site to load slower ! You can speed things
+up exponentially by simply combining all your css/js files into one file each.
 
-Bundle_fu makes it easy to do.  It's as easy as 1, 2!
+Bundle_fu makes it easy to do.  It's as easy as 1, 2 !
 
 h2. USAGE / INSTALLATION
 ------------------------
@@ -13,11 +13,12 @@ h3. Step 1
 
 Install this plugin
 
-script/plugin install git://github.com/zinf/bundle-fu.git
+<code>script/plugin install git://github.com/kares/bundle-fu.git</code>
 
 h3. Step 2
 
-Put the following around your stylesheets/javascripts (note it works with any method of including assets!):
+Put the following around your stylesheets/javascripts (note it works with any
+method of including assets!):
 
 <pre><code>
   <% bundle do %>
@@ -32,4 +33,53 @@ Put the following around your stylesheets/javascripts (note it works with any me
 
 That's it!
 
-"More info":http://code.google.com/p/bundle-fu/
+h3. Options
+
+The <code><% bundle %></code> method accepts several options :
+
+ # <code>:js_path</code> defaults to <code>"/javascripts/cache"</code>
+ # <code>:css_path</code> defaults to <code>"/stylesheets/cache"</code>
+ # <code>:name</code> the bundle name set it if you have multiple bundle blocks
+ # <code>:bypass</code> if You want to skip the asset bundling, if its a Proc
+ or symbol it will call/send it and use it's outcome
+ # <code>:packr_options</code> if "Packr":http://blog.jcoglan.com/packr/ is
+ available (defined) it will use it for packing javascript files and pass the
+ given options to it.
+
+"More Info":http://code.google.com/p/bundle-fu/
+
+h2. This Fork
+-------------
+
+This fork was created mainly to add support for asset id (timestamping) in CSS
+url links. Bundle-fu by default rewrites (relative) CSS urls, it's very useful
+if these rewrites use the rails provided asset tag helpers, thus enjoying asset
+cache busting with far future headers. This is exactly what this version does !
+
+h4. CSS Source
+
+<pre><code>
+
+  #header {
+    background-image: url(../images/header-bg.png) no-repeat scroll;
+  }
+
+  #footer .button {
+    background-image: url("./images/button-bg.gif");
+  }
+
+</code></pre>
+
+h4. Bundled CSS
+
+<pre><code>
+
+  #header {
+    background-image: url(/images/header-bg.png?1275245642) no-repeat scroll;
+  }
+
+  #footer .button {
+    background-image: url(/stylesheets/images/button-bg.gif?1275842817);
+  }
+
+</code></pre>
