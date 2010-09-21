@@ -1,70 +1,54 @@
 class BundleFu
 
-  class << self
-    attr_accessor :content_store
-    def init
-      @content_store = {}
-    end
-    
-    def bundle_files(filenames=[])
-      output = ""
-      filenames.each do |filename|
-        output << "/* --------- #{filename} --------- */\n"
-        begin
-          content = File.read(File.join(RAILS_ROOT, "public", filename))
-        rescue 
-          output << "/* FILE READ ERROR! */"
+  @@content_store = {}
+  def self.content_store
+    @@content_store
+  end
+
+  @@default_options = {
+    :name => "bundle",
+    :compress => true,
+    :css_path => "/stylesheets/cache",
+    :js_path => "/javascripts/cache"
+  }
+  def self.default_options
+    @@default_options
+  end
+
+  @@raise_read_errors = false
+  def self.raise_read_errors
+    @@raise_read_errors
+  end
+
+  def self.bundle_files(filenames)
+    buffer = ""
+    filenames.each do |filename|
+      buffer << "/* --------- #{filename} --------- */\n"
+      begin
+        content = File.read(File.join(RAILS_ROOT, "public", filename))
+      rescue
+        if raise_read_errors
+          raise
+        else
+          buffer << "/* FILE READ ERROR! */"
           next
         end
-        
-        output << (yield(filename, content) || "")
       end
-      output
+      buffer << (yield(filename, content) || "")
     end
-    
-    def bundle_js_files(filenames=[], options={})
-      packr = Object.const_defined?("Packr")
-      output = 
-        bundle_files(filenames) do |filename, content|
-          if options[:compress]
-            packr ? content : JSMinimizer.minimize_content(content)
-          else
-            content
-          end
-        end
-      
-      if packr # use Packr plugin (http://blog.jcoglan.com/packr/)
-        Packr.new.pack(output, options[:packr_options] || {:shrink_vars => false, :base62 => false})
-      else
-        output
-      end
-      
-    end
-
-    def bundle_css_files(filenames=[], options = {})
-      bundle_files(filenames) do |filename, content|
-        BundleFu::CSSUrlRewriter.rewrite_urls(filename, content)
-      end
-    end
+    buffer
   end
-  
-  self.init
   
   module InstanceMethods
     # valid options:
     #   :name - The name of the css and js files you wish to output
-    # returns true if a regen occured.  False if not.
+    # returns true if a re-generation occurred.  False if not.
     def bundle(options={}, &block)
-      # allow bypassing via the querystring
-      session[:bundle_fu] = (params[:bundle_fu]=="true") if params.has_key?(:bundle_fu)
-      
-      options = {
-        :css_path => ($bundle_css_path || "/stylesheets/cache"),
-        :js_path => ($bundle_js_path || "/javascripts/cache"),
-        :name => ($bundle_default_name || "bundle"),
-        :compress => true,
-        :bundle_fu => ( session[:bundle_fu].nil? ? ($bundle_fu.nil? ? true : $bundle_fu) : session[:bundle_fu] )
-      }.merge(options)
+      # allow bypassing via the query string
+      session[:bundle_fu] = (params[:bundle_fu].to_s == "true") if params.has_key?(:bundle_fu)
+
+      options = BundleFu.default_options.merge(options)
+      options[:bundle_fu] = session[:bundle_fu].nil? ? true : session[:bundle_fu]
       
       # allow them to bypass via parameter
       if bypass = options[:bypass]
@@ -125,7 +109,7 @@ class BundleFu
             FileUtils.rm_f(abs_path)
           else
             # call bundle_css_files or bundle_js_files to bundle all files listed.  output it's contents to a file
-            output = BundleFu.send("bundle_#{filetype}_files", new_filelist.filenames, options)
+            output = self.send("bundle_#{filetype}_files", new_filelist.filenames, options)
             File.open( abs_path, "w") {|f| f.puts output } if output
           end
           new_filelist.save_as(abs_filelist_path)
@@ -143,5 +127,33 @@ class BundleFu
         rails_version_less_2_2_0 ? concat( content, block.binding ) : concat( content )
       end
     end
+
+    private
+
+    def bundle_js_files(filenames, options = {})
+      packr = Object.const_defined?("Packr")
+      output =
+        BundleFu.bundle_files(filenames) do |filename, content|
+          if options[:compress]
+            packr ? content : JSMinimizer.minimize_content(content)
+          else
+            content
+          end
+        end
+
+      if packr # use Packr plugin (http://blog.jcoglan.com/packr/)
+        Packr.new.pack(output, options[:packr_options] || {:shrink_vars => false, :base62 => false})
+      else
+        output
+      end
+
+    end
+
+    def bundle_css_files(filenames, options = {})
+      BundleFu.bundle_files(filenames) do |filename, content|
+        BundleFu::CSSUrlRewriter.rewrite_urls(filename, content, self)
+      end
+    end
+
   end
 end

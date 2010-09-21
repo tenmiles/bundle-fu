@@ -1,6 +1,15 @@
 require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class CSSBundleTest < Test::Unit::TestCase
+
+#  def setup
+#    ENV["RAILS_ASSET_ID"] = '1234567890'
+#  end
+#
+#  def teardown
+#    ENV.delete("RAILS_ASSET_ID")
+#  end
+
   def test__rewrite_relative_path__should_rewrite
     assert_rewrites("/stylesheets/active_scaffold/default/stylesheet.css", 
       "../../../images/spinner.gif" => "/images/spinner.gif",
@@ -39,18 +48,18 @@ class CSSBundleTest < Test::Unit::TestCase
   end
   
   def test__bundle_css_file__should_rewrite_relative_path
-    bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_3.css"])
+    bundled_css = dummy_view.send :bundle_css_files, ["/stylesheets/css_3.css"]
     assert_match("background-image: url(/images/background.gif)", bundled_css)
     assert_match("background-image: url(/images/groovy/background_2.gif)", bundled_css)
   end
   
   def test__bundle_css_files__no_images__should_return_content
-    bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_1.css"])
+    bundled_css = dummy_view.send :bundle_css_files, ["/stylesheets/css_1.css"]
     assert_match("css_1 { }", bundled_css)
   end
 
   def test__bundle_css_file__should_not_rewrite_data_urls
-    bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_4.css"])
+    bundled_css = dummy_view.send :bundle_css_files, ["/stylesheets/css_4.css"]
     
     pattern = 
       Regexp.escape("body {background: URL(data:image/jpg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/") +
@@ -84,7 +93,7 @@ class CSSBundleTest < Test::Unit::TestCase
   end
 
   def test__bundle_css_file__adds_rails_asset_ids_for_existing_image_urls
-    bundled_css = BundleFu.bundle_css_files(["/stylesheets/css_5.css"])
+    bundled_css = dummy_view.send :bundle_css_files, ["/stylesheets/css_5.css"]
     #puts bundled_css
     pattern = Regexp.escape("background-image: url(/images/test1.gif?") + "\\d+" + Regexp.escape(')')
     assert_match(Regexp.new(pattern), bundled_css)
@@ -108,5 +117,33 @@ class CSSBundleTest < Test::Unit::TestCase
         assert_equal(dest, BundleFu::CSSUrlRewriter.rewrite_relative_path(source_filename, source))
       end
     end
-    
+
+    def dummy_view
+      @dummy_view = ActionView::Base.new
+      if @dummy_view.respond_to? :config
+        # rails 3.0.0+
+        def @dummy_view.config
+          config = {}
+
+          def config.asset_path
+            nil
+          end
+          config['asset_path'] = config.asset_path
+
+          def config.asset_host
+            nil
+          end
+          config['asset_host'] = config.asset_host
+
+          def config.assets_dir
+            File.join(RAILS_ROOT, 'public')
+          end
+          config['assets_dir'] = config.assets_dir
+
+          config
+        end
+      end
+      @dummy_view
+    end
+
 end

@@ -3,4 +3,4 @@
   require file
 end
 
-ActionView::Base.send(:include, BundleFu::InstanceMethods)
+ActionView::Base.send :include, BundleFu::InstanceMethods

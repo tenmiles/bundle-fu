@@ -32,7 +32,7 @@ require 'active_support'
 require 'active_support/core_ext/kernel/reporting'
 # Make double-sure the RAILS_ENV is set to test :
 silence_warnings { RAILS_ENV = "test" }
-silence_warnings { RAILS_ROOT = File.join(File.dirname(__FILE__), 'fixtures') } # due to AssetTagHelper::ASSETS_DIR !
+silence_warnings { RAILS_ROOT = File.join(File.dirname(__FILE__), 'fixtures') }
 
 module Rails
   class << self
@@ -85,7 +85,7 @@ end
 
 require 'action_controller'
 require 'action_view'
-require 'action_view/helpers'
+require 'action_view/base'
 
 if Rails.version >= '3.0.0'
   

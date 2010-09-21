@@ -1,9 +1,6 @@
 require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class FileListTest < Test::Unit::TestCase
-  def setup
-    
-  end
   
   def test__new_files__should_get_mtimes
     filename = "/javascripts/js_1.js"

@@ -1,9 +1,10 @@
 require File.expand_path('test_helper', File.join(File.dirname(__FILE__), '..'))
 
 class BundleFuTest < Test::Unit::TestCase
+  
   def setup
     @mock_view = MockView.new
-    BundleFu.init # resets BundleFu
+    BundleFu.content_store.clear # resets BundleFu
   end
   
   def teardown
@@ -23,15 +24,15 @@ class BundleFuTest < Test::Unit::TestCase
   
   def test__bundle_js_files__should_use_packr
     Object.send :class_eval, <<EOF
-    class ::Object::Packr
-      def initialize
+      class ::Object::Packr
+        def initialize
+        end
+
+        def pack(content, options={})
+          "PACKR!" + options.inspect
+        end
+
       end
-      
-      def pack(content, options={})
-        "PACKR!" + options.inspect
-      end
-      
-    end
 EOF
     
     @mock_view.bundle() { @@content_include_all }
@@ -184,7 +185,7 @@ private
   
   def purge_cache
     # remove all fixtures named "bundle*"
-    Dir[ public_file("**/cache") ].each{|filename| FileUtils.rm_rf filename }
+    Dir[ public_file("**/cache") ].each{ |filename| FileUtils.rm_rf filename }
   end
   
   def assert_public_file_exists(filename, message=nil)
@@ -222,5 +223,6 @@ private
         f.puts(content)
       }
     end
-  end  
+  end
+  
 end
