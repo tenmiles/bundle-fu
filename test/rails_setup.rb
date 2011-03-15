@@ -32,7 +32,7 @@ require 'active_support'
 require 'active_support/core_ext/kernel/reporting'
 # Make double-sure the RAILS_ENV is set to test :
 silence_warnings { RAILS_ENV = "test" }
-silence_warnings { RAILS_ROOT = File.join(File.dirname(__FILE__), 'fixtures') }
+silence_warnings { Rails.root.to_s = File.join(File.dirname(__FILE__), 'fixtures') }
 
 module Rails
   class << self
@@ -62,7 +62,7 @@ module Rails
     end
 
     def root
-      Pathname.new(RAILS_ROOT) if defined?(RAILS_ROOT)
+      Pathname.new(Rails.root.to_s) if defined?(Rails.root.to_s)
     end
 
     def env

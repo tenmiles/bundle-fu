@@ -25,7 +25,7 @@ class BundleFu
     filenames.each do |filename|
       buffer << "/* --------- #{filename} --------- */\n"
       begin
-        content = File.read(File.join(RAILS_ROOT, "public", filename))
+        content = File.read(File.join(Rails.root.to_s, "public", filename))
       rescue
         if raise_read_errors
           raise
@@ -70,7 +70,7 @@ class BundleFu
       new_files = nil
       abs_filelist_paths = [:css, :js].inject({}) do | hash, filetype |
         filename = "#{options[:name]}.#{filetype}.filelist"
-        hash[filetype] = File.join(RAILS_ROOT, "public", paths[filetype], filename)
+        hash[filetype] = File.join(Rails.root.to_s, "public", paths[filetype], filename)
         hash
       end
       
@@ -93,7 +93,7 @@ class BundleFu
 
       [:css, :js].each do |filetype|
         output_filename = File.join(paths[filetype], "#{options[:name]}.#{filetype}")
-        abs_path = File.join(RAILS_ROOT, "public", output_filename)
+        abs_path = File.join(Rails.root.to_s, "public", output_filename)
         abs_filelist_path = abs_filelist_paths[filetype]
        
         filelist = FileList.open( abs_filelist_path )
@@ -102,7 +102,7 @@ class BundleFu
         new_filelist = new_files ? BundleFu::FileList.new(new_files[filetype]) : filelist.clone.update_mtimes
         
         unless new_filelist == filelist
-          FileUtils.mkdir_p(File.join(RAILS_ROOT, "public", paths[filetype]))
+          FileUtils.mkdir_p(File.join(Rails.root.to_s, "public", paths[filetype]))
           # regenerate everything
           if new_filelist.filenames.empty?
             # delete the javascript/css bundle file if it's empty, but keep the filelist cache

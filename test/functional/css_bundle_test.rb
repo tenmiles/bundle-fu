@@ -136,7 +136,7 @@ class CSSBundleTest < Test::Unit::TestCase
           config['asset_host'] = config.asset_host
 
           def config.assets_dir
-            File.join(RAILS_ROOT, 'public')
+            File.join(Rails.root.to_s, 'public')
           end
           config['assets_dir'] = config.assets_dir
 
