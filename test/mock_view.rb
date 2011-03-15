@@ -25,16 +25,16 @@ class MockView < ActionView::Base
   end
   
   def stylesheet_link_tag(*args)
-    args.collect{|arg| "<link href=\"#{arg}?#{File.mtime(File.join(Rails.root.to_s, 'public', arg)).to_i}\" media=\"screen\" rel=\"Stylesheet\" type=\"text/css\" />" } * "\n"
+    args.collect{|arg| "<link href=\"#{arg}?#{File.mtime(File.join(Rails.root, 'public', arg)).to_i}\" media=\"screen\" rel=\"Stylesheet\" type=\"text/css\" />" } * "\n"
   end
   
   def javascript_include_tag(*args)
-    args.collect{|arg| "<script src=\"#{arg}?#{File.mtime(File.join(Rails.root.to_s, 'public', arg)).to_i}\" type=\"text/javascript\"></script>" } * "\n"
+    args.collect{|arg| "<script src=\"#{arg}?#{File.mtime(File.join(Rails.root, 'public', arg)).to_i}\" type=\"text/javascript\"></script>" } * "\n"
   end
 
   # mock-out override :
   def rails_asset_id(source)
-    path = File.join(Rails.root.to_s, 'public', source)
+    path = File.join(Rails.root, 'public', source)
     File.exist?(path) ? File.mtime(path).to_i.to_s : ''
   end
 

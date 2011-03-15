@@ -42,6 +42,6 @@ class Test::Unit::TestCase
   EOF
   
   def public_file(filename)
-    File.join(::Rails.root.to_s, "public", filename)
+    File.join(::Rails.root, "public", filename)
   end
 end
