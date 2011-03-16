@@ -48,11 +48,8 @@ The <code><% bundle %></code> method accepts several options :
 
 "More Info":http://code.google.com/p/bundle-fu/
 
-h2. This Fork
--------------
 
-This fork was created mainly to add support for asset id (timestamping) in CSS
-url links. Bundle-fu by default rewrites (relative) CSS urls, it's very useful
+Bundle-fu by default rewrites (relative) CSS urls, it's very useful
 if these rewrites use the rails provided asset tag helpers, thus enjoying asset
 cache busting with far future headers. This is exactly what this version does !
 
